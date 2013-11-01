@@ -1,8 +1,12 @@
 # Euler.Util.My
 
+プロジェクトオイラーやるのに便利なの
+
 ## Usage
 
 ## Installation
+
+quicklisp/local-projectsに置く
 
 ## Author
 
