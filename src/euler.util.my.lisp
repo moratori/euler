@@ -14,6 +14,7 @@
 	:#\]
 	:defmemofunc
 	:maximize
+	:pa$
 	:lazy
 	:force
 
@@ -38,6 +39,7 @@
 	:fact
 	:select
 	:getdigit
+	:digit->num
 	))
 (in-package :euler.util.my)
 
@@ -185,6 +187,13 @@
 	(getdigit (div n 10) (cons (mod n 10) result))))
 
 
+(defun digit->num (lst &optional (result 0))
+  (if (null lst) result
+	(digit->num 
+	  (cdr lst) 
+	  (+ result (* (car lst)  (expt 10 (1- (length lst)) ))))))
+
+
 ;;; .  n < 2 であるなら素数の定義より明らかに素数でない
 ;;; .  2 は　最小の素数である
 ;;; .  2 < n かつ n が偶数なら素数でない(全ての偶数は2で割れる)
@@ -322,3 +331,10 @@
 		   (list pivot)
 		   (psort 
 			 (filter x (funcall cmp pivot x) (cdr lst)) cmp)))))
+
+
+(defun pa$ (func arg)
+  (lambda (&rest args)
+	(apply func (cons arg args))))
+
+
