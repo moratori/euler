@@ -24,6 +24,8 @@
 	:range1-n
 	:take
 	:lastelm
+	:remove-one
+	:psort
 
 	:div?
 	:prime?
@@ -154,7 +156,11 @@
 
 
 (defun select (n r)
-  (/ (fact n) (* (fact r) (fact (- n r)))))
+  (cond 
+	((= n r) 1)
+	((zerop r) 1)
+	((= r 1) n)
+	(t (/ (fact n) (* (fact r) (fact (- n r)))))))
 
 
 (defun erat (n)
@@ -307,4 +313,12 @@
 (defun force (expr)
   (funcall expr))
 
-
+(defun psort (lst &optional (cmp #'<))
+  (if (null lst) nil
+	(let1 pivot (car lst)
+		 (append 
+		   (psort 
+			  (filter x (funcall (complement cmp) pivot x) (cdr lst)) cmp)
+		   (list pivot)
+		   (psort 
+			 (filter x (funcall cmp pivot x) (cdr lst)) cmp)))))
