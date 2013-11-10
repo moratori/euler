@@ -15,6 +15,7 @@
 	:defmemofunc
 	:maximize
 	:pa$
+	:flip
 	:lazy
 	:force
 
@@ -27,6 +28,7 @@
 	:lastelm
 	:remove-one
 	:psort
+	:find-fn
 
 	:div?
 	:prime?
@@ -336,5 +338,13 @@
 (defun pa$ (func arg)
   (lambda (&rest args)
 	(apply func (cons arg args))))
+
+(defun find-fn (pred start &optional (stp 1))
+  (if (funcall pred start) start
+	(find-fn pred (+ start stp) stp)))
+
+(defun flip (func)
+  (lambda (&rest args)
+	(apply func (reverse args))))
 
 
