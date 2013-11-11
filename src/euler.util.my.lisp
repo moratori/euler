@@ -42,6 +42,7 @@
 	:select
 	:getdigit
 	:digit->num
+	:pandigital?
 	))
 (in-package :euler.util.my)
 
@@ -348,3 +349,7 @@
 	(apply func (reverse args))))
 
 
+(defun pandigital? (n &optional (def 9))
+  (set-equal? 
+	(getdigit n) 
+	(range1-n def)))
