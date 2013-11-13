@@ -131,10 +131,10 @@
 (defun append1 (lst elm) 
   (append lst (list elm)))
 
-(defun range1-n (n &optional (func (lambda (x)x)) (result nil))
-  (if (zerop n) 
+(defun range1-n (n &optional (start 1) (func (lambda (x)x)) (result nil))
+  (if (> start n) 
 	result 
-	(range1-n (1- n) func (cons (funcall func n) result))))
+	(range1-n (1- n) start func (cons (funcall func n) result))))
 
 (defun take (n lst) 
   (subseq lst 0 n))
