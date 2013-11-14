@@ -13,11 +13,13 @@
 	:#\[
 	:#\]
 	:defmemofunc
+	:label
 	:maximize
 	:pa$
 	:flip
 	:lazy
 	:force
+	:for
 
 	:let1
 	:filter
@@ -43,6 +45,8 @@
 	:getdigit
 	:digit->num
 	:pandigital?
+	:getsqrt
+	:getsmall-num
 	))
 (in-package :euler.util.my)
 
@@ -53,10 +57,25 @@
         (debug 0)
         (safety 0)))
 
+(defconstant INF+ sb-ext:double-float-positive-infinity)
+(defconstant INF- sb-ext:double-float-negative-infinity)
+
+
 
 (defmacro filter (var pred lst)
   `(remove-if-not 
 	 (lambda (,var) ,pred) ,lst))
+
+
+(defmacro label ((fname vars &rest body) call)
+  `(labels
+	 ((,fname ,vars ,@body)) ,call))
+
+
+(defmacro for ((var init) test update result  &rest body)
+  `(do ((,var ,init ,update)) ((not ,test) ,result)
+	 ,@body))
+
 
 (defmacro let1 (var expr &rest body)
   `(let ((,var ,expr)) ,@body))
@@ -108,9 +127,6 @@
       ,(read-delimited-list #\| stream t)     
       ,(read-delimited-list #\] stream t))))
 
-
-(defconstant INF+ sb-ext:double-float-positive-infinity)
-(defconstant INF- sb-ext:double-float-negative-infinity)
 
 (defun append-1 (val var) (append var (list val)))
 
@@ -168,6 +184,7 @@
 	(t (/ (fact n) (* (fact r) (fact (- n r)))))))
 
 
+;; リスト実装のクソトロいver
 (defun erat (n)
   (if (< n 2) nil
 	(let1 finval (sqrt n)
@@ -178,7 +195,6 @@
 			  	(append result target)
 			  	(main 
 					(append1 result head)
-					;; 以下のfilterで頭からたどるのがよくないんだな
 					(filter x (not (div? x head)) target))))))
 		(main nil (cdr (range1-n n)))))))
 
@@ -353,3 +369,28 @@
   (set-equal? 
 	(getdigit n) 
 	(range1-n def)))
+
+
+;;; sqrt(n) の有理数近似
+;;; 小数点以下 limit まで有効な有理数
+(defun getsqrt (n limit)
+  (labels 
+	((main (acc ax limit)
+		(cond 
+		  ((zerop limit) acc)
+		  ((> (expt (+ acc ax) 2) n) 
+		   (main acc (/ ax 10) (1- limit)))
+		  (t (main (+ acc ax) ax limit))))) (main 0 1 limit)))
+
+
+;;; 有理数(分数表示で)が渡されることを意図している
+;;; 整数部分と小数部分 hukumete m keta wo eru
+(defun getsmall-num (n m)
+  (labels 
+	((main (n m result)
+	  (if (zerop m) 
+		(reverse result)
+		(multiple-value-bind (a b) (floor n)
+		  (main (* b 10) (1- m) (cons a result)))))) (main n m nil)))
+
+
