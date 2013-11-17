@@ -20,6 +20,7 @@
 	:lazy
 	:force
 	:for
+	:max/minimize
 
 	:let1
 	:filter
@@ -87,6 +88,16 @@
        (symbol-function (quote ,funcname)) 
        (memoize (function ,funcname)))))
 
+
+(defmacro lazy (expr)
+  (let ((isforced (gensym)) (result (gensym))) 
+      `(let (,isforced ,result)
+         (lambda ()
+           (if ,isforced ,result
+             (setf 
+                ,isforced t
+                ,result ,expr))))))
+
 (defmacro collect (constructor &rest def)
   (let ((result (gensym))
         (syms   (loop for i from 1 upto (1- (length def)) collect (gensym))))
@@ -126,6 +137,34 @@
     `(intensive
       ,(read-delimited-list #\| stream t)     
       ,(read-delimited-list #\] stream t))))
+
+
+
+(defmacro max/minimize (sw func domain)
+  (let ((comp   (gensym)) 
+		(funcv  (gensym)) 
+		(funca  (gensym))
+		(tmp    (gensym))
+		(dombin (loop repeat (length domain) 
+				 	  collect (gensym))))
+	`(let1 ,comp (if (eq ,sw 'min) #'< #'>)
+		(let ((,funcv (if (eq ,sw 'max) inf- inf+)) 
+			  (,funca nil))
+
+			,(label 
+			   (main (doms binder)
+					 (if (null doms) 
+					   `(let1 ,tmp (apply ,func (list ,@dombin))
+						 (when (funcall ,comp ,tmp ,funcv)
+						  (setf ,funcv ,tmp
+								,funca (list ,@dombin))))
+					   `(for (,(car binder) ,(caar doms)) 
+							 (<= ,(car binder) ,(cadar doms)) 
+							 (1+ ,(car binder)) nil
+							,(main (cdr doms) (cdr binder)))))
+			   	(main domain dombin))
+			(values ,funca ,funcv)))))
+
 
 
 (defun append-1 (val var) (append var (list val)))
@@ -329,14 +368,7 @@
 			(cons x y))(perm (remove-one x lst)))) lst)))
 
 
-(defmacro lazy (expr)
-  (let ((isforced (gensym)) (result (gensym))) 
-      `(let (,isforced ,result)
-         (lambda ()
-           (if ,isforced ,result
-             (setf 
-                ,isforced t
-                ,result ,expr))))))
+
 
 (defun force (expr)
   (funcall expr))
