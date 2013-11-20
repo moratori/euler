@@ -35,7 +35,11 @@
 
 	:div?
 	:prime?
+	:prime??
+	:coprime?
+	:expmod
 	:enumdiv
+	:a<=rnd<b
 	:perm
 	:sum
 	:prod
@@ -424,5 +428,50 @@
 		(reverse result)
 		(multiple-value-bind (a b) (floor n)
 		  (main (* b 10) (1- m) (cons a result)))))) (main n m nil)))
+
+
+(defun rand-init ()
+  (setf *random-state* 
+		(make-random-state t)))
+
+(rand-init)
+
+
+(defun a<=rnd<b (a b)
+  ;; 0 <= random < b
+  (let1 rand (random b)
+	(if (<= a rand) rand
+	  (a<=rnd<b a b))))
+
+
+(defun expmod (a n d &optional (result 1))
+  (if (zerop n) result
+	(if (oddp n)
+	  (expmod 
+		(mod (* a a) d) 
+		(ash n -1) d (mod (* result a) d))
+	  (expmod 
+		(mod (* a a) d) 
+		(ash n -1) d result))))
+
+(defun coprime? (a b)
+  (= 1 (gcd a b)))
+
+;;; fermat test
+(defun prime?? (n &optional (k 10))
+	(cond
+		((< n 2) nil) 
+		((= n 2) t) 
+		((evenp n) nil)
+		(t 
+			(label 
+			  (main (limit)
+				(if (zerop limit) t
+				  (let1 a (a<=rnd<b 2 n)
+					(cond 
+						((not (coprime? a n)) nil)
+						((not (= 1 (expmod a (1- n) n)))  nil)
+						(t (main (1- limit))))))) (main k)))))
+
 
 
