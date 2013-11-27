@@ -32,6 +32,7 @@
 	:remove-one
 	:psort
 	:find-fn
+	:duplicate-not?
 
 	:div?
 	:prime?
@@ -401,10 +402,17 @@
 	(apply func (reverse args))))
 
 
-(defun pandigital? (n &optional (def 9))
-  (set-equal? 
-	(getdigit n) 
-	(range1-n def)))
+(defun duplicate-not? (l)
+  (equal l (remove-duplicates l)))
+
+
+(defun pandigital? (n &key (start 1) (end 9) (dup? nil))
+  (let1 split (getdigit n)
+   (if dup?
+	 (set-equal? split (range1-n end start))
+	 (and 
+	   (duplicate-not? split)
+	   (set-equal? split (range1-n end start))))))
 
 
 ;;; sqrt(n) の有理数近似

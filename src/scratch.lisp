@@ -1,6 +1,16 @@
 
 
-(defun getdecimal (decimalnum &optional (limit 10) (result nil))
-  (multiple-value-bind (upper lower) (floor n)
-	)
-  )
+
+(defun duplicate-not? (l)
+  (equal l (remove-duplicates l)))
+
+
+(defun pandigital? (n &key (start 1) (end 9) (dup? nil))
+  (let1 split n
+   (if dup?
+	 (set-equal? split (range1-n end start))
+	 (and 
+	   (duplicate-not? split)
+	   (set-equal? split (range1-n end start))))))
+
+
