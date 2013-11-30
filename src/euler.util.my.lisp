@@ -38,6 +38,8 @@
 	:prime?
 	:prime??
 	:coprime?
+	:factr
+	:square?
 	:expmod
 	:enumdiv
 	:a<=rnd<b
@@ -393,9 +395,11 @@
   (lambda (&rest args)
 	(apply func (cons arg args))))
 
-(defun find-fn (pred start &optional (stp 1))
-  (if (funcall pred start) start
-	(find-fn pred (+ start stp) stp)))
+(defun find-fn (pred start &optional (stp 1) (skip? (lambda (x) nil)))
+  (if (funcall skip? start) 
+	(find-fn pred (+ start stp) stp skip?)
+		(if (funcall pred start) start
+			(find-fn pred (+ start stp) stp skip?))))
 
 (defun flip (func)
   (lambda (&rest args)
@@ -480,6 +484,33 @@
 						((not (coprime? a n)) nil)
 						((not (= 1 (expmod a (1- n) n)))  nil)
 						(t (main (1- limit))))))) (main k)))))
+
+;;; 浮動小数点の精度の問題で死ぬ(正確に判定できない)かもしれない
+(defun square? (n)
+  (multiple-value-bind (a b) (floor (sqrt n))
+	(zerop b)))
+
+
+;; n = p1 * p2 * ... * pm (n は合成数 , pi は素数)
+;; n^2 = p1^2 * p2^2 * ... * pm^2
+;; 任意のpiについて pi >= sqrt(n) と仮定する
+;; 仮定より pi^2 >= n
+;; よって pi^2 * p2^2 * ... * pm^2 > n^2
+;; より n^2 = p1^2 * p2^2 * ... * pm^2に矛盾
+;; よってある pi については sqrt(n) より小さい
+;; つまりはじめの n に対して sqrt(n)までの表を作れば
+;; 必ず n を割る p が見つかる
+;; その p で nをわった n/p は 
+;; n/p < n <-> sqrt(n/p) < sqrt(n)
+;; を満たすので はじめの sqrt(n)までのテーブルで十分たりる
+;; 
+;; あんまでかいと erat が落ちる
+;; リスト実装だからクソ
+(defun factr (n &optional (test #'prime?) (lst (erat (floor (sqrt n)))) (result nil))
+  (if (funcall test n) 
+	(cons n result)
+	(let1 p (find-if (lambda (x) (div? n x)) lst)
+		  (factr (/ n p) test lst (cons p result)))))
 
 
 
