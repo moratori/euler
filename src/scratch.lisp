@@ -5,6 +5,8 @@
   (equal l (remove-duplicates l)))
 
 
+;; this is test
+
 (defun pandigital? (n &key (start 1) (end 9) (dup? nil))
   (let1 split n
    (if dup?
