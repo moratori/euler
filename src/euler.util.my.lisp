@@ -46,6 +46,10 @@
 	:perm
 	:sum
 	:fibiter
+	:fibmat
+	:digit
+	:bottom-digit
+	:top-digit
 	:prod
 	:div
 	:erat
@@ -258,6 +262,19 @@
 	(digit->num 
 	  (cdr lst) 
 	  (+ result (* (car lst)  (expt 10 (1- (length lst)) ))))))
+
+
+(defun digit (n)
+  (floor (1+ (log n 10))))
+
+
+(defun bottom-digit (tar n)
+  (mod tar (expt 10 n)))
+
+
+(defun top-digit (tar n)
+  (div tar (expt 10 (- (digit tar) n))))
+
 
 
 ;;; .  n < 2 であるなら素数の定義より明らかに素数でない
@@ -521,5 +538,25 @@
 	(let1 p (find-if (lambda (x) (div? n x)) lst)
 		  (factr (/ n p) test lst (cons p result)))))
 
+
+
+;; multiplication 2 by 2 matrix only
+(defun mult-mat (a b)
+  (vector
+	(+ (* (aref a 0) (aref b 0)) (* (aref a 1) (aref b 2)))
+	(+ (* (aref a 0) (aref b 1)) (* (aref a 1) (aref b 3)))
+	(+ (* (aref a 2) (aref b 0)) (* (aref a 3) (aref b 2)))
+	(+ (* (aref a 2) (aref b 1)) (* (aref a 3) (aref b 3)))))
+
+;; expt 2by2 matrix
+(defun expt-mat (a n)
+  (cond 
+	((= n 1) a)
+	((evenp n) (expt-mat (mult-mat a a) (/ n 2)))
+	(t (mult-mat a (expt-mat a (1- n))))))
+
+(defun fibmat (n)
+  (if (zerop n) 0
+	(aref (expt-mat #(0 1 1 1) n) 1)))
 
 
