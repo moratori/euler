@@ -45,6 +45,7 @@
 	:a<=rnd<b
 	:perm
 	:sum
+	:fibiter
 	:prod
 	:div
 	:erat
@@ -65,9 +66,9 @@
         (debug 0)
         (safety 0)))
 
-(defconstant INF+ sb-ext:double-float-positive-infinity)
-(defconstant INF- sb-ext:double-float-negative-infinity)
 
+#+sbcl (defconstant INF+ sb-ext:double-float-positive-infinity)
+#+sbcl (defconstant INF- sb-ext:double-float-negative-infinity)
 
 
 (defmacro filter (var pred lst)
@@ -490,6 +491,16 @@
   (multiple-value-bind (a b) (floor (sqrt n))
 	(zerop b)))
 
+
+(defun fib% (n &optional (a 1) (b 2))
+  (cond 
+	((= n 1) a)
+	((= n 2) b)
+	(t (fib% (1- n) b (+ a b)))))
+
+
+(defun fibiter (n)
+  (fib% (1- n)))
 
 ;; n = p1 * p2 * ... * pm (n は合成数 , pi は素数)
 ;; n^2 = p1^2 * p2^2 * ... * pm^2
