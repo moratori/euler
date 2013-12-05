@@ -492,15 +492,13 @@
 	(zerop b)))
 
 
-(defun fib% (n &optional (a 1) (b 2))
+(defun fibiter (n &optional (a 0) (b 1))
   (cond 
-	((= n 1) a)
-	((= n 2) b)
-	(t (fib% (1- n) b (+ a b)))))
+	((= n 0) a)
+	((= n 1) b)
+	(t (fibiter (1- n) b (+ a b)))))
 
 
-(defun fibiter (n)
-  (fib% (1- n)))
 
 ;; n = p1 * p2 * ... * pm (n は合成数 , pi は素数)
 ;; n^2 = p1^2 * p2^2 * ... * pm^2
