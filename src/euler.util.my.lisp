@@ -37,6 +37,7 @@
 	:div?
 	:prime?
 	:prime??
+	:exgcd
 	:coprime?
 	:factr
 	:square?
@@ -559,4 +560,13 @@
   (if (zerop n) 0
 	(aref (expt-mat #(0 1 1 1) n) 1)))
 
+
+(defun exgcd (a b)
+  (label 
+	(main (x g v w)
+		(if (zerop w) (cons x (div (- g (* a x))  b))
+		  (let ((q (div g w))
+				(r (mod g w)))
+			(main v w (- x (* q v)) r))))
+	(main 1 a 0 b)))
 
