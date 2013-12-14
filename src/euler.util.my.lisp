@@ -31,6 +31,7 @@
 	:lastelm
 	:remove-one
 	:psort
+	:zip
 	:find-fn
 	:duplicate-not?
 
@@ -62,6 +63,8 @@
 	:getsqrt
 	:getsmall-num
 	))
+
+
 (in-package :euler.util.my)
 
 
@@ -204,6 +207,17 @@
 	result 
 	(range1-n (1- n) start func (cons (funcall func n) result))))
 
+(defun zip (&rest lsts)
+  (label 
+	(main (lsts result)
+		  (if (some #'null lsts) (reverse result)
+			(main 
+			  (mapcar #'cdr lsts)
+			  (cons 
+				(mapcan 
+				  (lambda (x) (list (car x))) lsts) result))))
+	(main lsts nil)))
+
 (defun take (n lst) 
   (subseq lst 0 n))
 
@@ -262,7 +276,13 @@
   (if (null lst) result
 	(digit->num 
 	  (cdr lst) 
-	  (+ result (* (car lst)  (expt 10 (1- (length lst)) ))))))
+	  (if (> 10 (car lst))
+		  (+ result (* (car lst)  (expt 10 (1- (length lst)) ))) 
+		  (+ (* result (expt 10 (1- (digit (car lst)))))
+			 (digit->num 
+			   (append 
+			 	(getdigit (car lst)) 
+			 	(make-list (1- (length lst))  :initial-element 0))))))))
 
 
 (defun digit (n)
