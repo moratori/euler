@@ -16,6 +16,7 @@
 	:label
 	:maximize
 	:pa$
+	:cut
 	:flip
 	:lazy
 	:force
@@ -103,6 +104,7 @@
      (setf 
        (symbol-function (quote ,funcname)) 
        (memoize (function ,funcname)))))
+
 
 
 (defmacro lazy (expr)
@@ -433,6 +435,21 @@
 (defun pa$ (func arg)
   (lambda (&rest args)
 	(apply func (cons arg args))))
+
+
+(defmacro cut (fsym &rest args)
+  (let ((gensyms 
+		  (loop for each in args if (eq '<> each) 
+				collect (gensym))))
+	`(lambda ,gensyms 
+	   (funcall ,fsym 
+		,@(labels 
+			((foo (a g r)
+				(if (null a) (reverse r)
+					(if (eq '<> (car a))
+						(foo (cdr a) (cdr g) (cons (car g) r))
+						(foo (cdr a) g (cons (car a) r)))))) 
+			(foo args gensyms nil))))))
 
 (defun find-fn (pred start &optional (stp 1) (skip? (lambda (x) nil)))
   (if (funcall skip? start) 
