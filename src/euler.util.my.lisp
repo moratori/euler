@@ -29,11 +29,13 @@
 	:set-equal?
 	:range1-n
 	:take
+	:single?
 	:lastelm
 	:remove-one
 	:psort
 	:zip
 	:find-fn
+	:group
 	:duplicate-not?
 
 	:div?
@@ -220,8 +222,29 @@
 				  (lambda (x) (list (car x))) lsts) result))))
 	(main lsts nil)))
 
+
+(defun single? (l)
+  (and (not (null l))
+	   (null (cdr l))))
+
 (defun take (n lst) 
   (subseq lst 0 n))
+
+(defun group (lst num &optional (dup nil))
+  (let1 len (length lst)
+	 	 (when (or (> num len)
+			   (and (null dup) (not (div? len num)))
+			   (not (div? (1- len) (1- num))))
+	   (error "group invalid number")))
+ 
+  (label 
+	(main (lst result)
+		(if (null dup)
+		  (if (null lst) (reverse result)
+			(main (nthcdr num lst) (cons (take num lst) result)))
+		  (if (single? lst) (reverse result)
+			(main (nthcdr (1- num) lst) (cons (take num lst) result)))))
+	(main lst nil)))
 
 (defun lastelm (lst) 
   (car (last lst)))
