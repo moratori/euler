@@ -39,6 +39,7 @@
 	:duplicate-not?
 
 	:div?
+	:amicable?
 	:prime?
 	:prime??
 	:exgcd
@@ -65,6 +66,8 @@
 	:pandigital?
 	:getsqrt
 	:getsmall-num
+	:euler-phi
+	:factr-group
 	))
 
 
@@ -629,4 +632,38 @@
 				(r (mod g w)))
 			(main v w (- x (* q v)) r))))
 	(main 1 a 0 b)))
+
+
+(defun amicable? (a b)
+ 	(label 
+	  (total (n)
+		(- (sum (enumdiv n)) n))
+		(and (/= a b) (= (total a) b) (= (total b) a))))
+
+
+(defun factr-group (n)
+  (let1 src (factr n)
+	(remove-duplicates 
+	  (mapcar 
+		(lambda (x)
+		  (list x (count x src))
+		  ) src) 
+	  :test #'equal)))
+
+
+(defun euler-phi (n &optional (f #'prime?))
+  (cond 
+	((= n 1) 1)
+	((funcall f n) (1- n))
+	(t 
+	  (let1 ps (factr-group n)
+		(if (single? ps)
+		  (destructuring-bind ((p e)) ps
+			(* (expt p (1- e)) (1- p)))
+		  (prod (mapcar 
+				  (lambda (x)
+					(euler-phi (apply #'expt x))) ps)))))))
+
+
+
 
