@@ -85,6 +85,9 @@
 #+sbcl (defconstant INF- sb-ext:double-float-negative-infinity)
 
 
+(defvar *prime-table* (list INF- nil))
+
+
 (defmacro filter (var pred lst)
   `(remove-if-not 
 	 (lambda (,var) ,pred) ,lst))
@@ -280,17 +283,29 @@
 
 ;; リスト実装のクソトロいver
 (defun erat (n)
-  (if (< n 2) nil
-	(let1 finval (sqrt n)
-	  (labels 
-	    ((main (result target)
-		   (let1 head (car target)
-			  (if (> head finval) 
-			  	(append result target)
-			  	(main 
-					(append1 result head)
-					(filter x (not (div? x head)) target))))))
-		(main nil (cdr (range1-n n)))))))
+  (destructuring-bind (num prime-list) *prime-table*
+	(if (< n num)
+	 ;;既にもっと大きい素数リストを求めている場合はそれを使う 
+	 (subseq 
+	   prime-list 
+	   0 (position-if (lambda (x) (> x n)) prime-list))
+	 (second 
+	   (setf *prime-table* 
+			(list n 
+				  ;; n までの素数リストを返す処理
+				  (if (< n 2) nil
+					(let1 finval (sqrt n)
+	  					(labels 
+	    					((main (result target)
+		   						(let1 head (car target)
+			  						(if (> head finval) 
+			  							(append result target)
+			  							(main 
+											(append1 result head)
+											(filter x (not (div? x head)) target))))))
+							;; 初期値のリストに前の奴使うといいかも
+							;; ってか早く配列実装
+						(main nil (range1-n n 2)))))))))))
 
 
 ;;; 各桁の数を取り出す
@@ -414,9 +429,9 @@
           (setf (gethash argv cache) (apply func argv)))))))
 
  
-(defun set-equal? (a b)
+(defun set-equal? (a b &key (test #'=))
   (if (or (not (listp a)) (not (listp b))) 
-	(equal a b)
+	(funcall test a b)
 	(and (null (set-difference a b :test #'set-equal?))
 	   (null (set-difference b a :test #'set-equal?)))))
 
@@ -433,13 +448,15 @@
 	 (append (reverse result) (cdr lst)))
 	(t (remove-one elm (cdr lst) test (cons (car lst) result)))))
 
+
 (defun perm (lst)
   (if (one? lst) (list lst)
 	(mapcan 
 	  (lambda (x)
 		(mapcar 
-		  (lambda (y)
-			(cons x y))(perm (remove-one x lst)))) lst)))
+		  	(lambda (y)
+				(cons x y))
+			(perm (remove-one x lst)))) lst)))
 
 
 
@@ -641,8 +658,8 @@
 		(and (/= a b) (= (total a) b) (= (total b) a))))
 
 
-(defun factr-group (n)
-  (let1 src (factr n)
+(defun factr-group (n &optional (f #'prime?))
+  (let1 src (factr n f)
 	(remove-duplicates 
 	  (mapcar 
 		(lambda (x)
@@ -656,7 +673,7 @@
 	((= n 1) 1)
 	((funcall f n) (1- n))
 	(t 
-	  (let1 ps (factr-group n)
+	  (let1 ps (factr-group n f)
 		(if (single? ps)
 		  (destructuring-bind ((p e)) ps
 			(* (expt p (1- e)) (1- p)))
