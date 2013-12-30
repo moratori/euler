@@ -13,6 +13,7 @@
 	:#\[
 	:#\]
 	:defmemofunc
+	:memoize
 	:label
 	:maximize
 	:pa$
