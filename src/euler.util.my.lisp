@@ -69,6 +69,9 @@
 	:getsmall-num
 	:euler-phi
 	:factr-group
+	:nth-root
+	:square?
+	:cube?
 	))
 
 
@@ -86,7 +89,7 @@
 #+sbcl (defconstant INF- sb-ext:double-float-negative-infinity)
 
 
-(defvar *prime-table* (list INF- nil))
+(defvar *prime-table* (list -1 nil))
 
 
 (defmacro filter (var pred lst)
@@ -284,6 +287,7 @@
 
 ;; リスト実装のクソトロいver
 (defun erat (n)
+  (when (< n 1) (error "positive integer required"))
   (destructuring-bind (num prime-list) *prime-table*
 	(if (< n num)
 	 ;;既にもっと大きい素数リストを求めている場合はそれを使う 
@@ -588,7 +592,7 @@
 ;;; 浮動小数点の精度の問題で死ぬ(正確に判定できない)かもしれない
 (defun square? (n)
   (multiple-value-bind (a b) (floor (sqrt n))
-	(zerop b)))
+	(= n (* a a))))
 
 
 (defun fibiter (n &optional (a 0) (b 1))
@@ -683,5 +687,31 @@
 					(euler-phi (apply #'expt x))) ps)))))))
 
 
+
+(defun nth-root (n x &key (tolerance (expt 10 -6) ) (limit (floor (log (/ x tolerance) 2))) (f (lambda (x)x)))
+  (label
+	(main (left right limit)
+		  (let1 middle (funcall f (/ (+ left right) 2))
+			(cond 
+			  ((zerop limit) 
+			 	 middle)
+			  ((> (expt middle n) x)
+			   (main left   middle   (1- limit)))
+			  (t (main  middle right (1- limit)))))) 
+	(main 0 x limit)))
+
+
+
+(defun square? (x)
+ (or 
+   (< x 1) 
+   (= (expt (nth-root 2 x :f #'floor)  2) x)))
+
+(defun cube? (x)
+  (and 
+	(/= x 0) 
+	(or 
+	  (= x 1)  
+	  (= (expt (nth-root 3 x :f #'floor)  3) x))))
 
 
