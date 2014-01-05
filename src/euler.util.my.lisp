@@ -299,18 +299,29 @@
 			(list n 
 				  ;; n までの素数リストを返す処理
 				  (if (< n 2) nil
-					(let1 finval (sqrt n)
-	  					(labels 
-	    					((main (result target)
-		   						(let1 head (car target)
-			  						(if (> head finval) 
-			  							(append result target)
-			  							(main 
-											(append1 result head)
-											(filter x (not (div? x head)) target))))))
-							;; 初期値のリストに前の奴使うといいかも
-							;; ってか早く配列実装
-						(main nil (range1-n n 2)))))))))))
+	  (labels 
+		((convert (arr)
+			(cons 2 
+				  (loop for x from 0 below (array-total-size arr)
+			  			if (and (not (evenp x)) (aref arr x)) collect x)))
+	 	(main ()
+			(let ((result 
+					(make-array 
+					  (1+ n) 
+				  	  :element-type 'boolean 
+				  	  :initial-element t))
+			  	  (start 2))
+
+		  		(setf (aref result 0) nil
+					  (aref result 1) nil)
+		  
+		  (loop while (< (* start start) n) do
+				(let1 pos (position t result :start (1+ start))
+					 (setf start pos)
+					 (loop for i from (* 2 pos) upto n by pos  do 
+							(when (div? i pos)
+							  (setf (aref result i) nil))))) result)))
+	(convert (main))))))))))
 
 
 ;;; 各桁の数を取り出す
