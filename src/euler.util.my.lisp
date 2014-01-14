@@ -23,6 +23,7 @@
 	:force
 	:for
 	:max/minimize
+	:letm
 
 	:let1
 	:filter
@@ -30,6 +31,7 @@
 	:set-equal?
 	:range1-n
 	:take
+	:init
 	:single?
 	:lastelm
 	:remove-one
@@ -196,6 +198,9 @@
 			(values ,funca ,funcv)))))
 
 
+(defmacro letm (&rest body)
+  `(let* ,(group (init body) 2) ,(lastelm body)))
+
 
 (defun append-1 (val var) (append var (list val)))
 
@@ -209,7 +214,6 @@
      (destructuring-bind (var <- lst . tail) lst
       (declare (ignore <-))
       (cons (list var lst) (make-bind tail))))))
-
 
 
 
@@ -239,6 +243,10 @@
 
 (defun take (n lst) 
   (subseq lst 0 n))
+
+(defun init (lst)
+  (subseq lst 0 (1- (length lst))))
+
 
 (defun group (lst num &optional (dup nil))
   (let1 len (length lst)
@@ -285,7 +293,7 @@
 	(t (/ (fact n) (* (fact r) (fact (- n r)))))))
 
 
-;; リスト実装のクソトロいver
+
 (defun erat (n)
   (when (< n 1) (error "positive integer required"))
   (destructuring-bind (num prime-list) *prime-table*
@@ -302,8 +310,13 @@
 	  (labels 
 		((convert (arr)
 			(cons 2 
-				  (loop for x from 0 below (array-total-size arr)
-			  			if (and (not (evenp x)) (aref arr x)) collect x)))
+				  ;; 素直に by 2 でやるより 上限を落とした方がなんか速い...
+				  (loop for x from 1
+						upto (ceiling (1- (/ (1- (array-total-size arr))  2)))
+						by 1
+						for index =  (1+ (* 2 x))
+			  			if (aref arr index) 
+						collect index)))
 	 	(main ()
 			(let ((result 
 					(make-array 
@@ -322,6 +335,12 @@
 							(when (div? i pos)
 							  (setf (aref result i) nil))))) result)))
 	(convert (main))))))))))
+
+
+
+
+
+
 
 
 ;;; 各桁の数を取り出す
@@ -521,8 +540,8 @@
 	(apply func (reverse args))))
 
 
-(defun duplicate-not? (l)
-  (equal l (remove-duplicates l)))
+(defun duplicate-not? (l &optional (f #'equal))
+  (equal l (remove-duplicates l :test f)))
 
 
 (defun pandigital? (n &key (start 1) (end 9) (dup? nil))
