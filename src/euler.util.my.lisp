@@ -38,6 +38,7 @@
 	:psort
 	:zip
 	:find-fn
+	:flatten
 	:group
 	:duplicate-not?
 
@@ -246,6 +247,15 @@
 
 (defun init (lst)
   (subseq lst 0 (1- (length lst))))
+
+
+(defun flatten (lst)
+  (cond
+	((null lst) nil)
+	((listp (car lst)) 
+	 (append (flatten (car lst))
+			 (flatten (cdr lst))))
+	(t (cons (car lst) (flatten (cdr lst))))))
 
 
 (defun group (lst num &optional (dup nil))
