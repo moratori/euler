@@ -25,6 +25,7 @@
 	:max/minimize
 	:letm
 
+	:binsearch
 	:let1
 	:filter
 	:append1
@@ -201,6 +202,27 @@
 
 (defmacro letm (&rest body)
   `(let* ,(group (init body) 2) ,(lastelm body)))
+
+
+;; pred : N -> {-1,0,1}
+;; 目的のデータなら 0
+;; pred に与えられたやつがでかい <->目的のやつがそれより小さい
+;; なら1
+;; それ以外なら-1を返すような pred
+(defun binsearch (pred start end)
+  (let*  ((middle (div (+ start end) 2))
+		  (value  (funcall pred middle)))
+	(when (or (= middle start)
+			  (= middle end))
+	  (error "binsearch: NOT FOUND"))
+	(cond 
+	  ((zerop value)
+	   middle)
+	  ((> value 0) 
+	   (binsearch pred start middle))
+	  (t (binsearch pred middle end)))))
+
+
 
 
 (defun append-1 (val var) (append var (list val)))
