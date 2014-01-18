@@ -651,11 +651,6 @@
 						((not (= 1 (expmod a (1- n) n)))  nil)
 						(t (main (1- limit))))))) (main k)))))
 
-;;; 浮動小数点の精度の問題で死ぬ(正確に判定できない)かもしれない
-(defun square? (n)
-  (multiple-value-bind (a b) (floor (sqrt n))
-	(= n (* a a))))
-
 
 (defun fibiter (n &optional (a 0) (b 1))
   (cond 
@@ -764,16 +759,24 @@
 
 
 
+;; 有理数がクルト間違うので
 (defun square? (x)
- (or 
-   (< x 1) 
-   (= (expt (nth-root 2 x :f #'floor)  2) x)))
+ (cond 
+   ((< x 0) 
+	(error "square?: positive integer required!"))
+   ((not (integerp x))
+	nil)
+   ((<= x 1) 
+	t)
+   (t  (= (expt (nth-root 2 x :f #'floor)  2) x))))
 
 (defun cube? (x)
-  (and 
-	(/= x 0) 
-	(or 
-	  (= x 1)  
-	  (= (expt (nth-root 3 x :f #'floor)  3) x))))
-
+  (cond 
+	((< x 0)
+	 (error "cube?: positive integer required!"))
+	((not (integerp x))
+	 nil)
+	((= x 1) 
+	 t)
+	(t (= (expt (nth-root 3 x :f #'floor)  3) x))))
 
